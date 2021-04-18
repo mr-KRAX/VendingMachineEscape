@@ -1,6 +1,8 @@
 using UnityEngine;
 
-public interface ICharacter {
-  Rigidbody GetRigidbody();
-  Transform GetTransform();
+namespace MainCharacter {
+  public interface ICharacter {
+    Rigidbody GetRigidbody();
+    Transform GetTransform();
+  }
 }
