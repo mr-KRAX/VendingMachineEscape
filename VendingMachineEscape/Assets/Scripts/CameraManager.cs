@@ -3,29 +3,40 @@ using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
 
-namespace Cam {
+namespace Game {
   public class CameraManager : MonoBehaviour {
+    static private CameraManager _instance;
+    static public CameraManager CM { get => _instance; }
+
     private CinemachineFreeLook cCam;
     private CinemachineCameraOffset cCamOffset;
     private float ccOffsetNew;
+    private float ccOffsetLimit;
     private bool ccOffsetIsChangeing = false;
-    private float ccOffestChangeSpeed = 10f;
+    private float ccOffestChangeSpeed = 300f;
+
+    private void Awake() {
+      if (!_instance)
+        _instance = this;
+    }
 
     private void Start() {
       cCam = GetComponent<CinemachineFreeLook>();
       cCamOffset = GetComponent<CinemachineCameraOffset>();
+      ccOffsetLimit = Mathf.Abs(cCamOffset.m_Offset.x);
     }
 
     private void Update() {
-      if (ccOffsetIsChangeing){
-        if (ccOffsetNew == cCamOffset.m_Offset.x){
+      if (ccOffsetIsChangeing) {
+        if (Mathf.Approximately(ccOffsetNew, cCamOffset.m_Offset.x)) {
+          cCamOffset.m_Offset.x = ccOffsetNew;
           ccOffsetIsChangeing = false;
           return;
         }
         float velocity = 0;
-        cCamOffset.m_Offset.x = Mathf.SmoothDamp(cCamOffset.m_Offset.x, ccOffsetNew, ref velocity, 0.05f, 300);
+        cCamOffset.m_Offset.x = Mathf.SmoothDamp(cCamOffset.m_Offset.x, ccOffsetNew, ref velocity, 0.05f, ccOffestChangeSpeed);
       }
-     }
+    }
 
     public void adjustCameraRotation(float angle) {
       float velocity = 0;
@@ -34,7 +45,7 @@ namespace Cam {
     }
 
     public void ChangeLookSide() {
-      ccOffsetNew = -cCamOffset.m_Offset.x;
+      ccOffsetNew = -Mathf.Sign(cCamOffset.m_Offset.x) * ccOffsetLimit;
       ccOffsetIsChangeing = true;
     }
 

@@ -1,42 +1,47 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using Cam;
-using Game;
-using UI;
-using General;
+﻿using UnityEngine;
+using static Game.GameManager;
+using static Game.CameraManager;
+using static Game.InputManager;
 
 namespace MainCharacter {
   public class Character : MonoBehaviour, ICharacter {
-    private GameManager gm;
-    private CharacterStats stats;
+    private bool isActive = true;
+
     private Rigidbody rdb;
     private CharacterMovement movement;
-    private CameraManager cam;
-    private IEnumerator batteryCoroutine = null;
-
-
-    private void Awake() {
-      rdb = GetComponent<Rigidbody>();
-      movement = new CharacterMovement(this);
-      gm = GameManager.GetInstance();
-      cam = gm.cameraManager;
-      stats = CharacterStats.GetInstance();
-    }
+    private Battery battery;
 
     private void Start() {
-      stats.currBatteryLevel = stats.maxBatteryLevel;
-      gm.ui.SetMaxBatteryLevel(stats.maxBatteryLevel);
-      gm.ui.SetBatteryLevel(stats.currBatteryLevel);
-      batteryCoroutine = DischargeBattery();
-      StartCoroutine(batteryCoroutine);
+      rdb = GetComponent<Rigidbody>();
+      movement = new CharacterMovement(this);
+      battery = new Battery(OnBatteryEmpty);
+
+      Launch();
+    }
+
+    private void Launch() {
+      battery.StartDischarging();
+      GM.SetActiveCharacter(this);
+    }
+
+    private void OnBatteryEmpty() {
+      Deactivate();
+      Debug.Log("DEAD");
     }
 
     private void FixedUpdate() {
+      if (!isActive)
+        return;
       AddGravity();
-      movement.Move(cam, Input.GetAxis("Vertical"), Input.GetAxis("Horizontal"));
-      if (Input.GetKeyDown("space") && IsGrounded())
-        movement.Jump();
+      ProcessMovement(IM.GetVertical(), IM.GetHorizontal());
+    }
+
+    private void ProcessMovement(float fwdInput, float sideInput) {
+      Vector3 fwdDir = CM.forward * fwdInput;
+      Vector3 sideDir = CM.right * sideInput;
+      movement.Move(fwdDir, sideDir);
+      if (fwdInput > 0 && sideInput != 0)
+        CM.adjustCameraRotation(transform.rotation.eulerAngles.y);
     }
 
     private void AddGravity() {
@@ -49,30 +54,10 @@ namespace MainCharacter {
       Vector3 dir = new Vector3(0, -1);
       bool isGrounded = Physics.Raycast(transform.position, dir, out hit, distance);
       Debug.DrawRay(transform.position, dir * distance, Color.red);
-      // Debug.Log(hit.collider.gameObject.name);
       return isGrounded;
     }
 
-    #region Coroutines
-    private IEnumerator ChargeBattery() {
-      Debug.Log("Charging");
-      while (stats.currBatteryLevel < stats.maxBatteryLevel) {
-        yield return new WaitForSeconds(1 / stats.chargingSpeed);
-        gm.ui.SetBatteryLevel(++stats.currBatteryLevel);
-      }
-    }
-
-    private IEnumerator DischargeBattery() {
-      Debug.Log("Discharging");
-      while (stats.currBatteryLevel > 0) {
-        yield return new WaitForSeconds(1 / stats.dischargingSpeed);
-        gm.ui.SetBatteryLevel(--stats.currBatteryLevel);
-      }
-    }
-    #endregion
-
     #region ICharacter
-
     public Rigidbody GetRigidbody() {
       return rdb;
     }
@@ -81,16 +66,28 @@ namespace MainCharacter {
       return transform;
     }
 
+    public void ProcessJump() {
+      if (isActive && IsGrounded())
+        movement.Jump();
+    }
+
+    public void Activate() {
+      isActive = true;
+    }
+
+    public void Deactivate() {
+      isActive = false;
+      rdb.velocity = Vector3.zero;
+    }
+    #endregion
+
+    #region IBattery
     public void StartCharging() {
-      StopCoroutine(batteryCoroutine);
-      batteryCoroutine = ChargeBattery();
-      StartCoroutine(batteryCoroutine);
+      battery.StartCharging();
     }
 
     public void StopCharging() {
-      StopCoroutine(batteryCoroutine);
-      batteryCoroutine = DischargeBattery();
-      StartCoroutine(batteryCoroutine);
+      battery.StartDischarging();
     }
     #endregion
   }

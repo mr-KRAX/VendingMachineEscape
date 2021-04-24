@@ -3,16 +3,20 @@ using UnityEngine.UI;
 
 namespace UI {
   public class UIManager : MonoBehaviour {
-    [SerializeField] private Slider batteryBar;
-    void Start() { }
+    static private UIManager _instance;
+    static public UIManager UIM { get => _instance; }
 
-    void Update() { }
+    [SerializeField] private Slider batteryBar;
 
     public void SetMaxBatteryLevel(int level) {
       batteryBar.maxValue = level;
     }
     public void SetBatteryLevel(int level) {
       batteryBar.value = level;
+    }
+    private void Awake() {
+      if (!_instance)
+        _instance = this;
     }
   }
 

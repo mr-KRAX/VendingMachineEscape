@@ -1,24 +1,23 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using General;
-using Cam;
+using static MainCharacter.CharacterStats;
 
 namespace MainCharacter {
   public class CharacterMovement {
     private Rigidbody rdb;
     private Transform transform;
-    private CharacterStats stats;
 
     public CharacterMovement(ICharacter character) {
       rdb = character.GetRigidbody();
       transform = character.GetTransform();
-      stats = CharacterStats.GetInstance();
     }
 
-    public void Move(CameraManager cam, float frontIntensity, float sideIntensity) {
+    // TODO: Do not use camera
+    public void Move(Vector3 front, Vector3 side) {
+    // public void Move(CameraManager cam, float frontIntensity, float sideIntensity) {
       Vector3 flatVelocity = rdb.velocity.xzOnly();
-
+      float frontIntensity = front.magnitude;
+      float sideIntensity = side.magnitude;
       /* Slow character down */
       if (frontIntensity == 0 && sideIntensity == 0) {
         if (Mathf.Approximately(flatVelocity.magnitude, 0))
@@ -27,30 +26,28 @@ namespace MainCharacter {
         if (flatVelocity.magnitude < 0.5f)
           rdb.velocity = rdb.velocity.yOnly();
         else
-          rdb.AddForce((Vector3.zero - flatVelocity).normalized * stats.acceleration * 3f);
+          rdb.AddForce((Vector3.zero - flatVelocity).normalized * STATS.acceleration * 3f);
         return;
       }
 
-      Vector3 movementDir = (cam.forward.xzOnly() * frontIntensity + cam.right.xzOnly() * sideIntensity).normalized;
+      // Vector3 movementDir = (cam.forward.xzOnly() * frontIntensity + cam.right.xzOnly() * sideIntensity).normalized;
+      Vector3 movementDir = (front + side).xzOnly().normalized;
 
       /* Rotate character */
-      transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(movementDir), stats.rotationSpeed);
+      transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(movementDir), STATS.rotationSpeed);
 
       /* Add force to required speed */
-      if (flatVelocity != movementDir * stats.maxFlatSpeed)
-        rdb.AddForce((movementDir * stats.maxFlatSpeed - flatVelocity).normalized * stats.acceleration);
-
-      if (frontIntensity > 0 && sideIntensity != 0)
-        cam.adjustCameraRotation(transform.rotation.eulerAngles.y);
+      if (flatVelocity != movementDir * STATS.maxFlatSpeed)
+        rdb.AddForce((movementDir * STATS.maxFlatSpeed - flatVelocity).normalized * STATS.acceleration);
     }
 
     public void Jump() {
-      if (stats.jumpIsInProgress && Time.fixedTime - stats.jumpLastTimeExecuted > stats.jumpDelay)
-        stats.jumpIsInProgress = false;
-      if (!stats.jumpIsInProgress) {
-        stats.jumpLastTimeExecuted = Time.fixedTime;
-        stats.jumpIsInProgress = true;
-        rdb.AddForce(transform.up * stats.jumpForce, ForceMode.VelocityChange);
+      if (STATS.jumpIsInProgress && Time.fixedTime - STATS.jumpLastTimeExecuted > STATS.jumpDelay)
+        STATS.jumpIsInProgress = false;
+      if (!STATS.jumpIsInProgress) {
+        STATS.jumpLastTimeExecuted = Time.fixedTime;
+        STATS.jumpIsInProgress = true;
+        rdb.AddForce(transform.up * STATS.jumpForce, ForceMode.VelocityChange);
         Debug.Log("Jump");
         return;
       }

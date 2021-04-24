@@ -1,13 +1,14 @@
 using UnityEngine;
 
 namespace General {
+  public delegate void Callback();
 
   static class Vector3Ext {
     public static Vector3 xzOnly(this Vector3 v) {
       return new Vector3(v.x, 0, v.z);
     }
 
-    public static Vector3 yOnly(this Vector3 v){
+    public static Vector3 yOnly(this Vector3 v) {
       return new Vector3(0, v.y, 0);
     }
   }

@@ -3,6 +3,7 @@ using UnityEngine;
 namespace MainCharacter {
   public class CharacterStats : MonoBehaviour {
     static private CharacterStats _instance = null;
+    static public CharacterStats STATS { get => _instance; }
 
     [Header("Flat movement")]
     [SerializeField] float MaxFlatSpeed = 4f;
@@ -13,49 +14,35 @@ namespace MainCharacter {
     [SerializeField] float JumpForce = 5f;
     [SerializeField] float JumpDelay = 0.5f;
 
-    [Header("Battery")] 
-    [SerializeField] int MaxBatteryLevel = 10; 
+    [Header("Battery")]
+    [SerializeField] int MaxBatteryLevel = 10;
     [SerializeField] float ChargingSpeed = 2f;
     [SerializeField] float DischargingSpeed = 0.5f;
 
 
 
-
     #region FlatMovement
-    public float maxFlatSpeed {get => MaxFlatSpeed;} 
-    public float acceleration {get => Acceleration;} 
-    public float rotationSpeed {get => RotationSpeed;} 
+    public float maxFlatSpeed { get => MaxFlatSpeed; }
+    public float acceleration { get => Acceleration; }
+    public float rotationSpeed { get => RotationSpeed; }
     #endregion
 
     #region Jumping
-    public float jumpForce {get => JumpForce;} 
-    public float jumpDelay {get => JumpDelay;} 
+    public float jumpForce { get => JumpForce; }
+    public float jumpDelay { get => JumpDelay; }
     public float jumpLastTimeExecuted;
-    public bool jumpIsInProgress = false; 
-
+    public bool jumpIsInProgress = false;
     #endregion
 
     #region Battery
-    public int maxBatteryLevel {get => MaxBatteryLevel;}
-    public float chargingSpeed {get => ChargingSpeed;}
-    public float dischargingSpeed {get => DischargingSpeed;}
-    public int currBatteryLevel;
-
+    public int maxBatteryLevel { get => MaxBatteryLevel; }
+    public float chargingSpeed { get => ChargingSpeed; }
+    public float dischargingSpeed { get => DischargingSpeed; }
     #endregion
-    
-    
-    private CharacterStats() { }
 
     private void Awake() {
       if (!_instance)
         _instance = this;
-      DontDestroyOnLoad(_instance);
     }
-
-    static public CharacterStats GetInstance() {
-      return _instance;
-    }
-
-
   }
 }
