@@ -20,26 +20,33 @@ namespace MainCharacter {
       float sideIntensity = side.magnitude;
       /* Slow character down */
       if (frontIntensity == 0 && sideIntensity == 0) {
-        if (Mathf.Approximately(flatVelocity.magnitude, 0))
           return;
+        // if (Mathf.Approximately(flatVelocity.magnitude, 0))
 
-        if (flatVelocity.magnitude < 0.5f)
-          rdb.velocity = rdb.velocity.yOnly();
-        else
-          rdb.AddForce((Vector3.zero - flatVelocity).normalized * STATS.acceleration * 3f);
-        return;
+        // if (flatVelocity.magnitude < 0.005f)
+        //   // rdb.velocity = rdb.velocity.yOnly();
+        //   ;
+        // else
+        //   rdb.AddForce((Vector3.zero - flatVelocity).normalized * STATS.acceleration * 3f);
+        // return;
       }
 
       // Vector3 movementDir = (cam.forward.xzOnly() * frontIntensity + cam.right.xzOnly() * sideIntensity).normalized;
       Vector3 movementDir = (front + side).xzOnly().normalized;
 
       /* Rotate character */
-      transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(movementDir), STATS.rotationSpeed);
 
       /* Add force to required speed */
       if (flatVelocity != movementDir * STATS.maxFlatSpeed)
         rdb.AddForce((movementDir * STATS.maxFlatSpeed - flatVelocity).normalized * STATS.acceleration);
     }
+
+    public void Rotate(Vector3 dir) {
+      if (dir.magnitude == 0)
+        return;
+      transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir.xzOnly()), STATS.rotationSpeed);
+    }
+
 
     public void Jump() {
       if (STATS.jumpIsInProgress && Time.fixedTime - STATS.jumpLastTimeExecuted > STATS.jumpDelay)

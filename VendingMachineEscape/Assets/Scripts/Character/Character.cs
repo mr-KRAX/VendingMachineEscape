@@ -1,7 +1,9 @@
-﻿using UnityEngine;
+using UnityEngine;
 using static Game.GameManager;
 using static Game.CameraManager;
 using static Game.InputManager;
+using InteractiveObjects;
+using General;
 
 namespace MainCharacter {
   public class Character : MonoBehaviour, ICharacter {
@@ -10,17 +12,18 @@ namespace MainCharacter {
     private Rigidbody rdb;
     private CharacterMovement movement;
     private Battery battery;
+    private WallDetecter wallDetecter;
 
     private void Start() {
       rdb = GetComponent<Rigidbody>();
       movement = new CharacterMovement(this);
       battery = new Battery(OnBatteryEmpty);
-
+      wallDetecter = gameObject.GetComponentInChildren<WallDetecter>();
       Launch();
     }
 
     private void Launch() {
-      battery.StartDischarging();
+      // battery.StartDischarging();
       GM.SetActiveCharacter(this);
     }
 
@@ -37,11 +40,41 @@ namespace MainCharacter {
     }
 
     private void ProcessMovement(float fwdInput, float sideInput) {
-      Vector3 fwdDir = CM.forward * fwdInput;
-      Vector3 sideDir = CM.right * sideInput;
-      movement.Move(fwdDir, sideDir);
-      if (fwdInput > 0 && sideInput != 0)
-        CM.adjustCameraRotation(transform.rotation.eulerAngles.y);
+      CompDir wallOrientation = wallDetecter.GetOrientation();
+      Vector3 fwdDir = CM.forward;
+      Vector3 sideDir = CM.right;
+      Vector3 lookDir;
+
+      if (wallOrientation == CompDir.zero) {
+        lookDir = (fwdDir*fwdInput + sideDir*sideInput).normalized;
+        if (fwdInput > 0 && sideInput != 0)
+          CM.adjustCameraRotation(transform.rotation.eulerAngles.y);
+      }
+      else {
+        // Wall wall = wallDetecter.activeWall;
+        float lookAngle = Vector3.SignedAngle(CM.forward.xzOnly(), wallOrientation.fwd, Vector3.up);
+        Debug.Log($"[Character]: camera angle {lookAngle}");
+        if (lookAngle > -45f && lookAngle <= 45f){
+          fwdDir = wallOrientation.fwd;
+          sideDir = wallOrientation.side;
+        }
+        else if (lookAngle > 45f && lookAngle <= 135f) {
+          fwdDir = -wallOrientation.side;
+          sideDir = wallOrientation.fwd;
+        }
+        else if (lookAngle > -135f && lookAngle < -45f ) {
+          fwdDir = wallOrientation.side;
+          sideDir = -wallOrientation.fwd;
+        }
+        else {
+          fwdDir = -wallOrientation.fwd;
+          sideDir = -wallOrientation.side;
+        }
+        lookDir = wallOrientation.fwd;
+      }
+      movement.Move(fwdDir * fwdInput, sideDir * sideInput);
+      movement.Rotate(lookDir);
+
     }
 
     private void AddGravity() {
