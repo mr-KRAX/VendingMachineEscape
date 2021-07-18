@@ -1,10 +1,10 @@
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace MainCharacter {
-  public class CharacterStats : MonoBehaviour {
-    static private CharacterStats _instance = null;
-    static public CharacterStats STATS { get => _instance; }
-
+  [CreateAssetMenu(fileName = "New CharacterStats")]
+  public class CharacterStats : ScriptableObject {
     [Header("Flat movement")]
     [SerializeField] float MaxFlatSpeed = 4f;
     [SerializeField] float Acceleration = 20f;
@@ -30,8 +30,6 @@ namespace MainCharacter {
     #region Jumping
     public float jumpForce { get => JumpForce; }
     public float jumpDelay { get => JumpDelay; }
-    public float jumpLastTimeExecuted;
-    public bool jumpIsInProgress = false;
     #endregion
 
     #region Battery
@@ -39,10 +37,5 @@ namespace MainCharacter {
     public float chargingSpeed { get => ChargingSpeed; }
     public float dischargingSpeed { get => DischargingSpeed; }
     #endregion
-
-    private void Awake() {
-      if (!_instance)
-        _instance = this;
-    }
   }
 }

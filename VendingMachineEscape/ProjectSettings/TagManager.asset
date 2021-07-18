@@ -8,6 +8,7 @@ TagManager:
   - Plague
   - Wall
   - Target
+  - Character
   layers:
   - Default
   - TransparentFX

@@ -5,7 +5,9 @@ using UnityEngine;
 namespace InteractiveObjects {
   public class Wall : MonoBehaviour {
     [SerializeField]
-    private Vector3 Tangent, Vertical;
+    private Vector3 Tangent = new Vector3();
+    [SerializeField]
+    private Vector3 Vertical =  new Vector3();
     
     public Vector3 normal {get; private set;}
     public Vector3 tangent {get; private set;}

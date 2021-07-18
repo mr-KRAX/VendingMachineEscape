@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace General {
@@ -16,6 +17,17 @@ namespace General {
       float cos = Mathf.Cos(angle);
       float sin = Mathf.Sin(angle);
       return new Vector2(p.x * cos - p.y * sin, p.x * sin + p.y * cos);
+    }
+  }
+
+  public interface ILogEnabled {
+    bool logOn {get;}
+  }
+  public class DebugExt : Debug {
+    public static Dictionary<System.Type, bool> list;
+    public static void Log(ILogEnabled caller, object message) {
+      if(caller.logOn)
+        Debug.Log($"[{caller.GetType()}]: " + message);
     }
   }
 
@@ -57,6 +69,34 @@ namespace General {
 
     public static bool operator !=(CompDir lhs, CompDir rhs) {
       return !(lhs == rhs);
+    }
+
+    // override object.Equals
+    public override bool Equals(object obj)
+    {
+        //
+        // See the full list of guidelines at
+        //   http://go.microsoft.com/fwlink/?LinkID=85237
+        // and also the guidance for operator== at
+        //   http://go.microsoft.com/fwlink/?LinkId=85238
+        //
+        
+        if (obj == null || GetType() != obj.GetType())
+        {
+            return false;
+        }
+        
+        // TODO: write your implementation of Equals() here
+        // throw new System.NotImplementedException();
+        return base.Equals (obj);
+    }
+    
+    // override object.GetHashCode
+    public override int GetHashCode()
+    {
+        // TODO: write your implementation of GetHashCode() here
+        // throw new System.NotImplementedException();
+        return base.GetHashCode();
     }
   }
 }

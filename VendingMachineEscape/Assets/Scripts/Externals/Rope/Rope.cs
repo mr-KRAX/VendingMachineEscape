@@ -47,7 +47,7 @@ namespace HumanAPI {
     public Vector3[] boneRot;
 
     [Tooltip("Print stuff from this script to the Log")]
-    public bool showDebug;
+    public bool showDebug = false;
 
     private bool initialized = false;
 

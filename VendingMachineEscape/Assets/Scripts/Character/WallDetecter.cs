@@ -5,7 +5,8 @@ using General;
 using InteractiveObjects;
 
 namespace MainCharacter {
-  public class WallDetecter : MonoBehaviour {
+  public class WallDetecter : MonoBehaviour, ILogEnabled {
+    public bool logOn => true; // ILogEnabled
     public Wall activeWall = null;
     private uint wallsCount = 0;
 
@@ -21,7 +22,7 @@ namespace MainCharacter {
       wallsCount++;
       // if (activeWall == null) 
         activeWall = triggeredWall;
-      LogMsg($"Wall: {triggeredWall.name} detected");
+      DebugExt.Log(this, $"{triggeredWall.name} detected");
     }
 
     private void OnTriggerStay(Collider other) {
@@ -42,23 +43,22 @@ namespace MainCharacter {
         activeWall = null;
     }
 
-    public CompDir GetOrientation(){
-      if (activeWall == null){
+    public bool IsWallDetected() {
+      return activeWall != null;
+    }
+
+    public CompDir GetWallOrientation(){
+      if (activeWall == null)
         return CompDir.zero;
-      }
+
+
       CompDir orientation = new CompDir(activeWall.normal, activeWall.tangent);
       Vector3 targetDir = transform.position - activeWall.location;
-      LogMsg($"angle={Vector3.Angle(activeWall.normal, targetDir)}");
+
+      DebugExt.Log(this, $"{activeWall.name}: angle={Vector3.Angle(activeWall.normal, targetDir)}");
       if (Vector3.Angle(activeWall.normal, targetDir) > 90f)
         return -orientation;
       return orientation;
-    }
-
-    // LOGGING
-    bool logOn = false;
-    void LogMsg(string msg) {
-      if (logOn) 
-        Debug.Log("[WallDetector]" + msg);
     }
   }
 }
